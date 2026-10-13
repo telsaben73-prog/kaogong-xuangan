@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>考公选岗测评</title>
+<style>
+  :root{
+    --accent:#B3392F;
+    --accent-deep:#972E26;
+    --accent-soft:#F8E9E7;
+    --gold:#C79A4B;
+    --bg:#FBF8F5;
+    --card:#FFFFFF;
+    --ink:#2A2421;
+    --muted:#8A7F78;
+    --line:#EFE7E0;
+    --ok:#3E7D54;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    min-height:100dvh;
+  }
+  .app{max-width:520px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom));}
+
+  /* ===== Hero ===== */
+  .hero{
+    position:relative;overflow:hidden;
+    margin:0 -16px 0;
+    padding:34px 22px 52px;
+    color:#fff;
+    border-radius:0 0 28px 28px;
+    background:linear-gradient(160deg,#B3392F 0%,#C34A3D 55%,#B3392F 100%);
+  }
+  .hero::before{
+    content:"";position:absolute;right:-40px;top:-50px;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);
+  }
+  .hero::after{
+    content:"";position:absolute;left:-30px;bottom:-70px;width:150px;height:150px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.10),transparent 70%);
+  }
+  .hero .eyebrow{
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:rgba(255,255,255,.82);margin-bottom:14px;position:relative;z-index:1;
+  }
+  .hero h1{
+    margin:0 0 12px;font-size:30px;line-height:1.25;font-weight:800;letter-spacing:-.01em;
+    position:relative;z-index:1;
+  }
+  .hero p{
+    margin:0;font-size:14.5px;color:rgba(255,255,255,.9);max-width:40ch;position:relative;z-index:1;
+  }
+  .hero .seal{
+    position:absolute;right:22px;bottom:40px;width:46px;height:46px;z-index:1;
+    border:1.5px solid rgba(255,255,255,.5);border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    color:rgba(255,255,255,.95);font-weight:700;font-size:13px;letter-spacing:.05em;
+    writing-mode:vertical-rl;padding:4px 0;
+  }
+
+  /* ===== Progress ===== */
+  .progress{margin:26px 4px 18px;}
+  .progress .bar{height:4px;background:var(--line);border-radius:99px;overflow:hidden;}
+  .progress .bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .4s cubic-bezier(.16,1,.3,1);}
+  .progress .meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
+  .progress .step{font-size:13px;color:var(--muted);font-weight:600;}
+  .progress .count{font-size:13px;color:var(--muted);}
+  .progress .count b{color:var(--accent);font-weight:800;}
+
+  /* ===== Question card ===== */
+  .qcard{
+    background:var(--card);border-radius:18px;padding:24px 20px;
+    box-shadow:0 1px 2px rgba(42,36,33,.04),0 12px 32px -16px rgba(42,36,33,.12);
+    animation:fadeUp .42s cubic-bezier(.16,1,.3,1);
+  }
+  .qcard h2{margin:0 0 6px;font-size:21px;font-weight:800;letter-spacing:-.01em;line-height:1.35;}
+  .qcard .sub{margin:0 0 20px;font-size:13.5px;color:var(--muted);}
+  .qcard .tag-multi{display:inline-block;font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:3px 8px;margin-bottom:12px;}
+
+  .opts{display:flex;flex-direction:column;gap:11px;}
+  .opt{
+    position:relative;display:flex;align-items:center;gap:13px;
+    border:1.5px solid var(--line);border-radius:14px;padding:14px 15px;
+    cursor:pointer;transition:transform .12s ease,border-color .18s ease,background .18s ease;
+    background:#fff;
+  }
+  .opt:active{transform:scale(.985);}
+  .opt .txt{flex:1;min-width:0;}
+  .opt .lb{display:block;font-size:15.5px;font-weight:600;line-height:1.4;}
+  .opt .ds{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .opt .mark{
+    flex:none;width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;transition:all .18s ease;
+  }
+  .opt .mark svg{width:13px;height:13px;stroke:#fff;stroke-width:3;opacity:0;transform:scale(.5);transition:all .18s ease;}
+  .opt.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .opt.selected .mark{background:var(--accent);border-color:var(--accent);}
+  .opt.selected .mark svg{opacity:1;transform:scale(1);}
+
+  /* ===== Nav ===== */
+  .nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:10;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--bg) 72%,rgba(251,248,245,0));
+    display:flex;gap:12px;
+  }
+  .nav .inner{max-width:520px;margin:0 auto;display:flex;gap:12px;width:100%;}
+  .btn{
+    flex:1;height:52px;border:none;border-radius:16px;font-size:16px;font-weight:700;
+    cursor:pointer;transition:transform .12s ease,background .2s ease,opacity .2s ease;
+    font-family:inherit;letter-spacing:.02em;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--line);flex:0 0 auto;padding:0 20px;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:disabled{opacity:.45;}
+
+  /* ===== Result ===== */
+  #resultView{animation:fadeUp .5s cubic-bezier(.16,1,.3,1);}
+  .result-head{text-align:center;margin:26px 0 20px;}
+  .result-head .big{font-size:52px;font-weight:800;line-height:1;color:var(--accent);letter-spacing:-.02em;}
+  .result-head .big small{font-size:18px;font-weight:700;color:var(--muted);margin-left:2px;}
+  .result-head h2{margin:12px 0 6px;font-size:21px;font-weight:800;}
+  .result-head .note{font-size:13.5px;color:var(--muted);margin:0;max-width:42ch;margin-inline:auto;}
+  .result-head .relax{display:inline-block;margin-top:12px;font-size:12.5px;font-weight:600;color:var(--gold);background:rgba(199,154,75,.12);border-radius:8px;padding:5px 12px;}
+
+  .rcard{
+    background:var(--card);border-radius:16px;padding:18px 18px 16px;margin-bottom:14px;
+    box-shadow:0 1px 2px rgba(42,36,33,.04),0 10px 28px -16px rgba(42,36,33,.12);
+    animation:fadeUp .5s cubic-bezier(.16,1,.3,1) backwards;
+  }
+  .rcard .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .rcard .dept{font-size:16.5px;font-weight:800;line-height:1.35;color:var(--ink);}
+  .rcard .num{
+    flex:none;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:13px;
+    border-radius:10px;padding:5px 10px;white-space:nowrap;
+  }
+  .rcard .post{margin-top:6px;font-size:14px;color:var(--muted);}
+  .rcard .loc{margin-top:8px;font-size:12.5px;color:var(--accent);font-weight:600;}
+  .rcard .grid{margin-top:13px;padding-top:13px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;}
+  .rcard .cell{font-size:12px;color:var(--muted);background:#F7F3EF;border-radius:8px;padding:5px 10px;line-height:1.5;}
+  .rcard .cell b{color:var(--ink);font-weight:600;}
+
+  .disclaimer{margin-top:22px;font-size:12px;color:var(--muted);text-align:center;line-height:1.7;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="eyebrow">2027 国考 · 选岗助手</div>
+    <h1>帮她找到适合的岗位</h1>
+    <p>从成都 136 个岗位里，用 5 道题筛出匹配的那几个。</p>
+    <div class="seal">金榜题名</div>
+  </header>
+
+  <section id="quizView">
+    <div class="progress">
+      <div class="bar"><i id="bar"></i></div>
+      <div class="meta">
+        <span class="step" id="stepLabel"></span>
+        <span class="count" id="countLabel"></span>
+      </div>
+    </div>
+    <div class="qcard" id="qcard"></div>
+  </section>
+
+  <section id="resultView" hidden></section>
+</div>
+
+<div class="nav">
+  <div class="inner">
+    <button class="btn btn-ghost" id="prevBtn" style="display:none;">上一步</button>
+    <button class="btn btn-primary" id="nextBtn">下一题</button>
+  </div>
+</div>
+
+<script>
+const JOBS = [{"dept":"四川省通信管理局","org":"建设管理处","post":"一级主任科员及以下","num":"1","major":"本科为080701电子信息工程、080703通信工程、080706信息工程、080714T电子信息科学与技术、080904K信息安全或研究生为0810信息与通信工程、0812计算机科学与技术、0854电子信息","edu":"本科及以上","party":"中共党员","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"中国民航空中警察总队","org":"中国民航空中警察总队四支队","post":"八中队一级警长及以下","num":"1","major":"大学本科：120203K会计学、120204财务管理、120207审计学；研究生：1202工商管理学（会计学、财务管理、审计学）、1253会计、1257审计","edu":"本科或硕士研究生","party":"中共党员或共青团员","years":"无限制","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类","工商公共管理类"]},{"dept":"中国民航空中警察总队","org":"中国民航空中警察总队十五支队","post":"七十中队一级警长及以下","num":"2","major":"大学本科：120203K会计学、120204财务管理、120207审计学；研究生：1202工商管理学（会计学、财务管理、审计学）、1253会计、1257审计","edu":"本科或硕士研究生","party":"中共党员或共青团员","years":"无限制","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类","工商公共管理类"]},{"dept":"成都海关缉私局","org":"成都海关缉私局","post":"办公室一级警长及以下","num":"1","major":"0501中国语言文学（语言学及应用语言学、汉语言文字学、中国古代文学、中国现当代文学）","edu":"仅限硕士研究生","party":"中共党员或共青团员","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["中文新闻类"]},{"dept":"财政部四川监管局","org":"四川监管局","post":"一级主任科员及以下","num":"1","major":"应用经济学、会计、审计、税务、金融、资产评估","edu":"仅限硕士研究生","party":"中共党员","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"财政部四川监管局","org":"四川监管局","post":"一级主任科员及以下","num":"1","major":"软件工程、计算机科学与技术、统计学、数学、应用统计、数字经济、管理科学与工程","edu":"仅限硕士研究生","party":"中共党员","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["经济金融类","计算机电子信息类","统计数学类"]},{"dept":"国家自然资源督察成都局","org":"国家自然资源督察成都局","post":"督察室一级主任科员及以下","num":"2","major":"本科：勘查技术与工程，资源勘查工程，采矿工程，矿物资源工程，城乡规划/城市规划。研究生：矿物学、岩石学、矿床学，矿产普查与勘探，采矿工程，城市规划与设计，城乡规划学，城乡规划/城市规划。","edu":"本科及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["理工工程类"]},{"dept":"四川测绘地理信息局","org":"四川测绘地理信息局","post":"科技与国际合作处一级主任科员及以下","num":"1","major":"070501自然地理学、070503地图学与地理信息系统、081602摄影测量与遥感、081603地图制图学与地理信息工程、0812计算机科学与技术、085410人工智能、085411大数据技术与工程","edu":"仅限博士研究生","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["计算机电子信息类","理工工程类"]},{"dept":"四川测绘地理信息局","org":"四川测绘地理信息局","post":"基建装备处（国有资产管理处）一级主任科员及以下","num":"1","major":"0812计算机科学与技术、0839网络空间安全、0256资产评估、0816测绘科学与技术","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类","计算机电子信息类","理工工程类"]},{"dept":"生态环境部西南督察局","org":"生态环境部西南督察局","post":"督察业务处一级主任科员及以下","num":"1","major":"环境科学与工程、化学工程与技术","edu":"仅限硕士研究生","party":"中共党员","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["理工工程类"]},{"dept":"中国人民银行四川省分行","org":"中国人民银行四川省分行","post":"综合业务部门一级主任科员及以下","num":"8","major":"国际金融、世界经济、西方经济学、货币银行学、计量经济学、数量经济学、金融工程、金融数学、金融科技、金融审计、计算金融","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类","经济金融类","统计数学类"]},{"dept":"中国人民银行四川省分行","org":"中国人民银行四川省分行","post":"综合业务部门一级主任科员及以下","num":"4","major":"经济金融类（不含统计、国际商务、资产评估、经济与贸易类、国际贸易等专业）","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类","经济金融类","统计数学类"]},{"dept":"中国人民银行四川省分行","org":"中国人民银行四川省分行","post":"综合业务部门一级主任科员及以下","num":"2","major":"会计、财务管理、审计","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类"]},{"dept":"中国人民银行四川省分行","org":"中国人民银行四川省分行","post":"综合业务部门一级主任科员及以下","num":"2","major":"法学（0301）、法律（0351）","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["法学类"]},{"dept":"中国人民银行四川省分行","org":"中国人民银行四川省分行","post":"综合业务部门一级主任科员及以下","num":"2","major":"电子科学与技术（0809）、信息与通信工程（0810）、计算机科学与技术（0812）、软件工程（0835）、网络空间安全（0839）、电子信息（0854）","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"中国人民银行四川省分行","org":"中国人民银行四川省分行","post":"综合业务部门一级主任科员及以下","num":"2","major":"数学、统计","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["统计数学类"]},{"dept":"中国人民银行四川省分行","org":"中国人民银行四川省分行双流营业管理部","post":"综合业务部门一级主任科员及以下","num":"1","major":"会计、财务管理、审计","edu":"仅限本科","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市双流区","tags":["财会审计类"]},{"dept":"成都海关","org":"成都海关","post":"关税处科技管理（电子信息化类）二级主管及以下","num":"1","major":"电子与通信工程、电子与信息、新一代电子信息技术、通信工程、集成电路工程、控制工程、仪器仪表工程、光学工程、光电信息工程","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"成都海关","org":"成都海关","post":"动植物和食品检验检疫处植物检疫监管二级主管及以下","num":"1","major":"植物病理学、农业昆虫与害虫防治、森林保护学、资源利用与植物保护","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["农林动植物类"]},{"dept":"成都海关","org":"成都双流机场海关","post":"卫生检疫一级行政执法员","num":"1","major":"临床医学、预防医学、卫生检验与检疫、卫生监督、基础医学、医学检验技术","edu":"仅限本科","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["医学类"]},{"dept":"成都海关","org":"成都双流机场海关","post":"科技管理（统计分析应用类）一级行政执法员","num":"2","major":"数学与应用数学、信息与计算科学、数理基础科学、数据计算及应用、数据科学与大数据技术、统计学、应用统计学、数据科学、大数据管理与应用","edu":"仅限本科","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["计算机电子信息类","统计数学类"]},{"dept":"成都海关","org":"成都双流机场海关","post":"办公综合一级行政执法员","num":"1","major":"汉语言文学、汉语言、秘书学、中国语言与文化、新闻学、传播学、网络与新媒体、国际新闻与传播","edu":"仅限本科","party":"中共党员","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市","tags":["计算机电子信息类","中文新闻类"]},{"dept":"成都海关","org":"成都双流机场海关","post":"海关业务二级主办及以下","num":"5","major":"海关管理、海关检验检疫安全、海关稽查","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["医学类"]},{"dept":"成都海关","org":"青白江海关","post":"法制综合业务一级行政执法员","num":"1","major":"法学、知识产权、国际经贸规则、国际法","edu":"仅限本科","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市","tags":["法学类"]},{"dept":"成都海关","org":"青白江海关","post":"动物检疫一级行政执法员","num":"1","major":"动物医学、动物科学、水生动物医学、动植物检疫（动检方向）","edu":"仅限本科","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["医学类","农林动植物类"]},{"dept":"成都海关","org":"青白江海关","post":"海关业务二级主办及以下","num":"2","major":"海关管理、海关检验检疫安全、海关稽查","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["医学类"]},{"dept":"成都海关","org":"锦城海关","post":"动物检疫一级行政执法员","num":"1","major":"动物医学、动物科学、水生动物医学、动植物检疫（动检方向）","edu":"仅限本科","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["医学类","农林动植物类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局四川天府新区税务局","post":"一级行政执法员（一）","num":"2","major":"工商管理类、社会保障类、电子商务类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局四川天府新区税务局","post":"一级行政执法员（二）","num":"2","major":"工商管理类、社会保障类、电子商务类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局四川天府新区税务局","post":"一级行政执法员（三）","num":"2","major":"电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都东部新区管理委员会税务局","post":"一级主办及以下（一）","num":"2","major":"法学类、中国语言文学类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都东部新区管理委员会税务局","post":"一级主办及以下（二）","num":"2","major":"法学类、新闻传播学类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都东部新区管理委员会税务局","post":"一级主办及以下（三）","num":"2","major":"财政学类、金融学类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都东部新区管理委员会税务局","post":"一级主办及以下（四）","num":"2","major":"电子信息类、计算机类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都东部新区管理委员会税务局","post":"一级行政执法员（一）","num":"2","major":"经济学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都东部新区管理委员会税务局","post":"一级行政执法员（二）","num":"2","major":"经济学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都高新技术产业开发区税务局","post":"一级行政执法员（一）","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都高新技术产业开发区税务局","post":"一级行政执法员（二）","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都高新技术产业开发区税务局","post":"一级行政执法员（三）","num":"2","major":"金融学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都高新技术产业开发区税务局","post":"一级行政执法员（四）","num":"2","major":"金融学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都高新技术产业开发区税务局","post":"一级行政执法员（五）","num":"2","major":"电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都高新技术产业开发区税务局","post":"一级行政执法员（六）","num":"2","major":"法学类、财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["财会审计类","法学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市锦江区税务局","post":"一级主办及以下","num":"2","major":"数学类、统计学类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市锦江区","tags":["统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市锦江区税务局","post":"一级行政执法员（一）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市锦江区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市锦江区税务局","post":"一级行政执法员（二）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市锦江区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市锦江区税务局","post":"一级行政执法员（三）","num":"2","major":"法学类、政治学类","edu":"本科及以上","party":"中共党员","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市锦江区","tags":["法学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市锦江区税务局","post":"一级行政执法员（四）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市锦江区","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市锦江区税务局","post":"一级行政执法员（五）","num":"2","major":"计算机类、环境科学与工程类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市锦江区","tags":["计算机电子信息类","理工工程类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青羊区税务局","post":"一级主办及以下","num":"2","major":"法学类、中国语言文学类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青羊区","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青羊区税务局","post":"一级行政执法员（一）","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青羊区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青羊区税务局","post":"一级行政执法员（二）","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青羊区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青羊区税务局","post":"一级行政执法员（三）","num":"2","major":"金融学类、工商管理类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青羊区","tags":["经济金融类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青羊区税务局","post":"一级行政执法员（四）","num":"2","major":"金融学类、工商管理类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青羊区","tags":["经济金融类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青羊区税务局","post":"一级行政执法员（五）","num":"2","major":"财政学类、财会审计类、社会保障类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青羊区","tags":["财会审计类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青羊区税务局","post":"一级行政执法员（六）","num":"2","major":"电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青羊区","tags":["计算机电子信息类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市金牛区税务局","post":"一级主办及以下","num":"2","major":"法学类、中国语言文学类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金牛区","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市金牛区税务局","post":"一级行政执法员（一）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金牛区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市金牛区税务局","post":"一级行政执法员（二）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金牛区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市金牛区税务局","post":"一级行政执法员（三）","num":"2","major":"统计学类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金牛区","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市金牛区税务局","post":"一级行政执法员（四）","num":"2","major":"统计学类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金牛区","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市金牛区税务局","post":"一级行政执法员（五）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市金牛区","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市金牛区税务局","post":"一级行政执法员（六）","num":"2","major":"法学类、财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金牛区","tags":["财会审计类","法学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市武侯区税务局","post":"一级行政执法员（一）","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市武侯区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市武侯区税务局","post":"一级行政执法员（二）","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市武侯区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市成华区税务局","post":"一级行政执法员（一）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市成华区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市成华区税务局","post":"一级行政执法员（二）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市成华区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市成华区税务局","post":"一级行政执法员（三）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市成华区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市成华区税务局","post":"一级行政执法员（四）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市成华区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市成华区税务局","post":"一级行政执法员（五）","num":"2","major":"法学类、中国语言文学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市成华区","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市成华区税务局","post":"一级行政执法员（六）","num":"2","major":"统计学类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市成华区","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市龙泉驿区税务局","post":"一级行政执法员","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市龙泉驿区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青白江区税务局","post":"一级主办及以下","num":"2","major":"工商管理类、社会保障类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青白江区","tags":["工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青白江区税务局","post":"一级行政执法员（一）","num":"3","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青白江区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青白江区税务局","post":"一级行政执法员（二）","num":"3","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青白江区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青白江区税务局","post":"一级行政执法员（三）","num":"2","major":"法学类、政治学类、马克思主义理论类","edu":"本科及以上","party":"中共党员","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市青白江区","tags":["法学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市青白江区税务局","post":"一级行政执法员（四）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市青白江区","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市新都区税务局","post":"一级主办及以下","num":"2","major":"统计学类、计算机类","edu":"硕士研究生及以上","party":"中共党员","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市新都区","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市新都区税务局","post":"一级行政执法员（一）","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市新都区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市新都区税务局","post":"一级行政执法员（二）","num":"2","major":"经济学类、财政学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市新都区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市新都区税务局","post":"一级行政执法员（三）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市新都区","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市温江区税务局","post":"一级主办及以下","num":"2","major":"经济学类、财政学类、工商管理类","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市温江区","tags":["财会审计类","经济金融类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市温江区税务局","post":"一级行政执法员（一）","num":"2","major":"数学类、统计学类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市温江区","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市温江区税务局","post":"一级行政执法员（二）","num":"2","major":"法学类、中国语言文学类、新闻传播学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市温江区","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市双流区税务局","post":"一级行政执法员（一）","num":"2","major":"统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市双流区","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市双流区税务局","post":"一级行政执法员（二）","num":"2","major":"法学类、中国语言文学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市双流区","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市双流区税务局","post":"一级行政执法员（三）","num":"2","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市双流区","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市郫都区税务局","post":"一级行政执法员（一）","num":"2","major":"经济学类、财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市郫都区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市郫都区税务局","post":"一级行政执法员（二）","num":"2","major":"经济学类、财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市郫都区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市郫都区税务局","post":"一级行政执法员（三）","num":"3","major":"统计学类、计算机类、环境科学与工程类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市郫都区","tags":["计算机电子信息类","统计数学类","理工工程类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市郫都区税务局","post":"一级行政执法员（四）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市郫都区","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局成都市新津区税务局","post":"一级行政执法员","num":"2","major":"金融学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市新津区","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局简阳市税务局","post":"一级行政执法员（一）","num":"2","major":"财政学类、财会审计类、社会保障类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市简阳市","tags":["财会审计类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局简阳市税务局","post":"一级行政执法员（二）","num":"2","major":"财政学类、财会审计类、社会保障类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市简阳市","tags":["财会审计类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局简阳市税务局","post":"一级行政执法员（三）","num":"2","major":"统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市简阳市","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局简阳市税务局","post":"一级行政执法员（四）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市简阳市","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局彭州市税务局","post":"一级行政执法员（一）","num":"2","major":"经济学类、财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市彭州市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局彭州市税务局","post":"一级行政执法员（二）","num":"2","major":"经济学类、财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市彭州市","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局彭州市税务局","post":"一级行政执法员（三）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市彭州市","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局崇州市税务局","post":"一级行政执法员（一）","num":"3","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市崇州市","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局崇州市税务局","post":"一级行政执法员（二）","num":"3","major":"财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市崇州市","tags":["财会审计类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局崇州市税务局","post":"一级行政执法员（三）","num":"2","major":"数学类、统计学类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市崇州市","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局崇州市税务局","post":"一级行政执法员（四）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市崇州市","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局崇州市税务局","post":"一级行政执法员（五）","num":"2","major":"法学类、中国语言文学类、新闻传播学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市崇州市","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局金堂县税务局","post":"一级行政执法员（一）","num":"1","major":"法学类、中国语言文学类、新闻传播学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金堂县","tags":["法学类","中文新闻类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局金堂县税务局","post":"一级行政执法员（二）","num":"2","major":"统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金堂县","tags":["计算机电子信息类","统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局金堂县税务局","post":"一级行政执法员（三）","num":"2","major":"经济学类、财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金堂县","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局金堂县税务局","post":"一级行政执法员（四）","num":"2","major":"经济学类、财政学类、财会审计类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市金堂县","tags":["财会审计类","经济金融类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局金堂县税务局","post":"一级行政执法员（五）","num":"2","major":"法学类、中国语言文学类、新闻传播学类、英语相关专业、经济学类、财政学类、金融学类、经济与贸易类、工商管理类、公共管理类、数学类、统计学类、电子信息类、计算机类","edu":"本科及以上","party":"不限","years":"二年","service":"大学生村官、农村义务教育阶段学校教师特设岗位计划、“三支一扶”计划、大学生志愿服务西部计划、在军队服役5年（含）以上的高校毕业生退役士兵","ratio":"3:1","loc":"四川省成都市金堂县","tags":["财会审计类","经济金融类","计算机电子信息类","统计数学类","法学类","中文新闻类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局大邑县税务局","post":"一级行政执法员（一）","num":"2","major":"数学类、统计学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市大邑县","tags":["统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局大邑县税务局","post":"一级行政执法员（二）","num":"2","major":"数学类、统计学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市大邑县","tags":["统计数学类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局大邑县税务局","post":"一级行政执法员（三）","num":"2","major":"经济与贸易类、公共管理类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市大邑县","tags":["经济金融类","工商公共管理类"]},{"dept":"国家税务总局四川省税务局","org":"国家税务总局大邑县税务局","post":"一级行政执法员（四）","num":"2","major":"法学类、中国语言文学类","edu":"本科及以上","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市大邑县","tags":["法学类","中文新闻类"]},{"dept":"国家金融监督管理总局四川监管局","org":"国家金融监督管理总局四川监管局","post":"监管部门一级主任科员及以下","num":"2","major":"国际金融、世界经济、西方经济学、货币银行学、计量经济学、数量经济学、金融工程、金融数学、金融科技、金融审计、计算金融","edu":"硕士研究生及以上","party":"不限","years":"无限制","service":"无限制","ratio":"4:1","loc":"四川省成都市","tags":["财会审计类","经济金融类","统计数学类"]},{"dept":"国家金融监督管理总局四川监管局","org":"国家金融监督管理总局四川监管局","post":"监管部门一级主任科员及以下","num":"1","major":"经济学类（不含统计、税务、资产评估、区域国别学）","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"4:1","loc":"四川省成都市","tags":["财会审计类","经济金融类","统计数学类"]},{"dept":"国家金融监督管理总局四川监管局","org":"国家金融监督管理总局四川监管局","post":"法规部门一级主任科员及以下","num":"1","major":"法学（仅限专业代码0301、0351，不含环境与资源保护法学、军事法学）","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"4:1","loc":"四川省成都市","tags":["法学类","理工工程类"]},{"dept":"国家金融监督管理总局四川监管局","org":"国家金融监督管理总局四川监管局","post":"科技部门一级主任科员及以下","num":"3","major":"计算机科学与技术、计算机系统结构、计算机软件与理论、计算机应用技术、软件工程、计算机技术、网络空间安全、网络与信息安全、电子科学与技术、电子信息、信息与通信工程、通信与信息系统、通信工程、人工智能（085410）、大数据技术与工程","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"4:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"国家金融监督管理总局四川监管局","org":"国家金融监督管理总局四川监管局","post":"统计信息部门一级主任科员及以下","num":"1","major":"统计学（0270、0714、020208）、应用统计、应用数学","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"4:1","loc":"四川省成都市","tags":["统计数学类"]},{"dept":"国家金融监督管理总局四川监管局","org":"国家金融监督管理总局新都监管支局","post":"财会部门一级主任科员及以下","num":"1","major":"会计学、财务管理、审计学","edu":"仅限本科","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市新都区","tags":["财会审计类"]},{"dept":"国家金融监督管理总局四川监管局","org":"国家金融监督管理总局温江监管支局","post":"法规部门一级主任科员及以下","num":"1","major":"法学（仅限专业代码030101K）","edu":"仅限本科","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市温江区","tags":["法学类"]},{"dept":"国家金融监督管理总局四川监管局","org":"国家金融监督管理总局四川监管局辖内监管支局","post":"监管部门一级主任科员及以下","num":"5","major":"经济学类（02）","edu":"仅限本科","party":"不限","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["经济金融类"]},{"dept":"中国证券监督管理委员会四川监管局","org":"中国证券监督管理委员会四川监管局","post":"辖区财金类监管岗位一级主任科员及以下","num":"2","major":"经济学类","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["经济金融类"]},{"dept":"中国证券监督管理委员会四川监管局","org":"中国证券监督管理委员会四川监管局","post":"辖区会计类监管岗位一级主任科员及以下","num":"4","major":"会计学（含会计硕士）、审计学（含审计硕士）、财务管理；经济学类","edu":"本科及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类","经济金融类"]},{"dept":"中国证券监督管理委员会四川监管局","org":"中国证券监督管理委员会四川监管局","post":"辖区会计类监管岗位一级主任科员及以下","num":"4","major":"会计学（含会计硕士）、审计学（含审计硕士）、财务管理","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类"]},{"dept":"中国证券监督管理委员会四川监管局","org":"中国证券监督管理委员会四川监管局","post":"辖区法律类监管岗位一级主任科员及以下","num":"2","major":"法学、法律硕士","edu":"硕士研究生及以上","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["法学类"]},{"dept":"四川出入境边防检查总站","org":"四川出入境边防检查总站","post":"成都出入境边防检查站警务技术一级主管及以下","num":"2","major":"人工智能085410，大数据技术与工程085411，软件工程083500、085405","edu":"硕士研究生及以上","party":"中共党员或共青团员","years":"无限制","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"中国民用航空局西南地区管理局","org":"民航西南地区管理局","post":"办公室一级主任科员及以下","num":"1","major":"研究生专业：国民经济学（020201）、区域经济学（020202）、产业经济学（020205）、交通运输规划与管理（082303）","edu":"硕士研究生及以上","party":"中共党员","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["经济金融类"]},{"dept":"中国民用航空局西南地区管理局","org":"民航西南地区管理局","post":"政策法规处一级主任科员及以下","num":"1","major":"研究生专业：马克思主义哲学（010101）、法学（0301）、法律（0351）","edu":"仅限硕士研究生","party":"不限","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["法学类"]},{"dept":"中国民用航空局西南地区管理局","org":"民航西南地区管理局","post":"财务处一级主任科员及以下","num":"1","major":"研究生专业：会计学（120201）、会计（125300）、审计（025700、125700）","edu":"仅限硕士研究生","party":"中共党员","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["财会审计类"]},{"dept":"中国民用航空局西南地区管理局","org":"民航西南地区管理局","post":"人事科教处一级主任科员及以下","num":"1","major":"研究生专业：逻辑学（010104）、科学技术哲学（010108）、网络空间安全（083900）","edu":"仅限硕士研究生","party":"中共党员","years":"二年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["计算机电子信息类"]},{"dept":"中国民用航空局西南地区管理局","org":"民航西南地区管理局","post":"适航审定处一级主任科员及以下","num":"1","major":"研究生专业：机械工程、机械制造及其自动化、动力工程及工程热物理、电气工程、电力系统及其自动化、电力电子与电力传动、飞行器设计、航空宇航推进理论与工程、航空宇航制造工程、航空工程","edu":"硕士研究生及以上","party":"中共党员或共青团员","years":"三年","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["理工工程类"]},{"dept":"中国民用航空局西南地区管理局","org":"民航四川安全监督管理局","post":"适航维修处一级主任科员及以下","num":"1","major":"研究生专业：机械工程（0802）、动力工程及工程热物理（0807）、电子科学与技术（0809）、交通运输工程（0823）、航空宇航科学与技术（0825）","edu":"硕士研究生及以上","party":"中共党员","years":"二年","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["计算机电子信息类","理工工程类"]},{"dept":"中国民用航空局西南地区管理局","org":"民航四川安全监督管理局","post":"空中交通管理处一级主任科员及以下","num":"1","major":"研究生专业：大气科学（070600）、气象学（070601）、大气物理学与大气环境（070602）","edu":"硕士研究生及以上","party":"中共党员","years":"三年","service":"无限制","ratio":"3:1","loc":"四川省成都市","tags":["理工工程类"]},{"dept":"国家国防科技工业局","org":"西南核设施安全中心","post":"安全监督岗一级主任科员及以下","num":"2","major":"核相关理工类专业","edu":"硕士研究生及以上","party":"中共党员","years":"无限制","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["理工工程类"]},{"dept":"国家统计局四川调查总队","org":"国家统计局四川调查总队","post":"总队机关业务处室二级主任科员及以下（1）","num":"1","major":"统计学类、数学类、经济学类，计算机科学与技术","edu":"仅限硕士研究生","party":"不限","years":"无限制","service":"无限制","ratio":"5:1","loc":"四川省成都市青羊区","tags":["经济金融类","计算机电子信息类","统计数学类"]},{"dept":"国家统计局四川调查总队","org":"国家统计局四川调查总队","post":"总队机关业务处室二级主任科员及以下（2）","num":"1","major":"统计学类、数学类、经济学类，计算机科学与技术","edu":"仅限硕士研究生","party":"不限","years":"无限制","service":"无限制","ratio":"5:1","loc":"四川省成都市青羊区","tags":["经济金融类","计算机电子信息类","统计数学类"]},{"dept":"生态环境部西南核与辐射安全监督站","org":"生态环境部西南核与辐射安全监督站","post":"核与辐射安全监督岗位一级主任科员及以下","num":"4","major":"核工程类、机械类、电气类、材料科学与工程类及其相关专业","edu":"仅限硕士研究生","party":"不限","years":"无限制","service":"无限制","ratio":"5:1","loc":"四川省成都市","tags":["理工工程类"]}];
+
+const QUESTIONS = [
+  {
+    key:'major', multi:true, title:'她的专业属于哪些方向', sub:'可多选，与所学专业相关的都勾上',
+    options:[
+      {label:'财会审计', value:'财会审计类', desc:'会计 / 审计 / 财务 / 财税'},
+      {label:'经济金融', value:'经济金融类', desc:'经济学 / 金融 / 国际贸易'},
+      {label:'计算机 · 电子信息', value:'计算机电子信息类', desc:'计算机 / 软件 / 通信 / 信息安全'},
+      {label:'统计 · 数学', value:'统计数学类', desc:'统计学 / 应用统计 / 数学'},
+      {label:'法学 · 法律', value:'法学类', desc:'法学 / 法律 / 知识产权'},
+      {label:'中文 · 新闻 · 传播', value:'中文新闻类', desc:'汉语言 / 新闻 / 传播 / 秘书'},
+      {label:'工商 · 公共管理', value:'工商公共管理类', desc:'工商管理 / 公共管理 / 电商'},
+      {label:'理工 · 工程', value:'理工工程类', desc:'机械 / 电气 / 环境 / 测绘等'},
+      {label:'医学 · 卫生检验', value:'医学类', desc:'临床 / 预防 / 医学检验'},
+      {label:'农林 · 动植物', value:'农林动植物类', desc:'动物 / 植物 / 农学'},
+      {label:'其他 / 不确定', value:'__any__', desc:'选择后不再限制专业'}
+    ]
+  },
+  {
+    key:'edu', multi:false, title:'她的最高学历', sub:'单选',
+    options:[
+      {label:'本科', value:'本科', desc:''},
+      {label:'硕士研究生', value:'硕士研究生', desc:''},
+      {label:'博士研究生', value:'博士研究生', desc:''}
+    ]
+  },
+  {
+    key:'party', multi:false, title:'她的政治面貌', sub:'单选',
+    options:[
+      {label:'中共党员', value:'中共党员', desc:'含预备党员'},
+      {label:'共青团员', value:'共青团员', desc:''},
+      {label:'群众', value:'群众', desc:''}
+    ]
+  },
+  {
+    key:'exp', multi:false, title:'她的工作经历', sub:'单选',
+    options:[
+      {label:'应届毕业生', value:'应届', desc:'2027 年应届'},
+      {label:'往届 · 暂无 2 年基层经历', value:'往届无经历', desc:''},
+      {label:'已有 2 年及以上基层经历', value:'有2年基层', desc:''},
+      {label:'有基层服务项目经历', value:'服务基层项目', desc:'三支一扶 / 西部计划 / 村官 / 特岗教师等'}
+    ]
+  },
+  {
+    key:'loc', multi:false, title:'希望的工作地点', sub:'单选',
+    options:[
+      {label:'就在金牛区', value:'金牛区', desc:'五块石家门口'},
+      {label:'金牛区 + 主城区', value:'主城区', desc:'青羊 / 锦江 / 成华 / 武侯'},
+      {label:'成都市区都可以', value:'全市', desc:'含周边区县'}
+    ]
+  }
+];
+
+const EDU_MAP = {
+  '本科':['本科及以上','仅限本科','本科或硕士研究生'],
+  '硕士研究生':['本科及以上','硕士研究生及以上','仅限硕士研究生','本科或硕士研究生'],
+  '博士研究生':['本科及以上','硕士研究生及以上','仅限博士研究生']
+};
+
+const LOC_RANK = {'四川省成都市金牛区':0,'四川省成都市青羊区':1,'四川省成都市锦江区':1,'四川省成都市成华区':1,'四川省成都市武侯区':1,'四川省成都市':1};
+
+function locMatch(loc, pref){
+  if(pref==='金牛区') return loc==='四川省成都市金牛区';
+  if(pref==='主城区'){
+    if(loc==='四川省成都市') return true;
+    return ['金牛区','青羊区','锦江区','成华区','武侯区'].some(d=>loc.includes(d));
+  }
+  if(pref==='全市') return loc.includes('成都');
+  return true;
+}
+
+function matchJob(job, ans){
+  if(ans.major && ans.major.length && !ans.major.includes('__any__')){
+    if(!job.tags.some(t=>ans.major.includes(t))) return false;
+  }
+  if(ans.edu){
+    if(!EDU_MAP[ans.edu].includes(job.edu)) return false;
+  }
+  if(ans.party){
+    if(job.party==='中共党员' && ans.party!=='中共党员') return false;
+    if(job.party==='中共党员或共青团员' && ans.party==='群众') return false;
+  }
+  if(ans.exp){
+    const isService = job.service!=='无限制';
+    if(ans.exp==='应届' || ans.exp==='往届无经历'){
+      if(job.years!=='无限制' || isService) return false;
+    }else if(ans.exp==='有2年基层'){
+      if(isService) return false;
+      if(job.years!=='无限制' && job.years!=='二年') return false;
+    }else if(ans.exp==='服务基层项目'){
+      if(!isService && job.years!=='无限制' && job.years!=='二年') return false;
+    }
+  }
+  if(ans.loc){
+    if(!locMatch(job.loc, ans.loc)) return false;
+  }
+  return true;
+}
+
+const answers = {};
+let cur = 0;
+let selected = new Set();
+
+function renderQuestion(){
+  const q = QUESTIONS[cur];
+  const multi = q.multi;
+  selected.clear();
+  if(answers[q.key] !== undefined){
+    const v = answers[q.key];
+    if(Array.isArray(v)) v.forEach(x=>selected.add(x));
+    else if(v) selected.add(v);
+  }
+  const bar = document.getElementById('bar');
+  const stepLabel = document.getElementById('stepLabel');
+  const countLabel = document.getElementById('countLabel');
+  const qcard = document.getElementById('qcard');
+
+  bar.style.width = (cur/QUESTIONS.length*100)+'%';
+  stepLabel.textContent = '第 '+(cur+1)+' / '+QUESTIONS.length+' 题';
+  const prevAns = answers[q.key];
+  const done = prevAns !== undefined && (!Array.isArray(prevAns) ? true : prevAns.length>0);
+  countLabel.innerHTML = done ? '已选' : '待选择';
+
+  let html = '';
+  if(multi) html += '<span class="tag-multi">多选</span>';
+  html += '<h2>'+q.title+'</h2><p class="sub">'+q.sub+'</p><div class="opts">';
+  q.options.forEach((o,i)=>{
+    const on = selected.has(o.value);
+    html += '<div class="opt'+(on?' selected':'')+'" data-i="'+i+'">'
+          + '<div class="txt"><span class="lb">'+o.label+'</span>'
+          + (o.desc?'<span class="ds">'+o.desc+'</span>':'')
+          + '</div><div class="mark"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>';
+  });
+  html += '</div>';
+  qcard.innerHTML = html;
+
+  qcard.querySelectorAll('.opt').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const o = q.options[parseInt(el.dataset.i)];
+      if(multi){
+        if(selected.has(o.value)) selected.delete(o.value); else selected.add(o.value);
+      }else{
+        selected.clear(); selected.add(o.value);
+      }
+      if(multi && o.value==='__any__'){
+        selected.clear(); selected.add('__any__');
+      }
+      syncOptions(q);
+      updateNav();
+    });
+  });
+
+  updateNav();
+}
+
+function syncOptions(q){
+  document.querySelectorAll('.opt').forEach(el=>{
+    const o = q.options[parseInt(el.dataset.i)];
+    const on = selected.has(o.value);
+    el.classList.toggle('selected', on);
+  });
+  const has = selected.size>0;
+  document.getElementById('countLabel').innerHTML = has ? '已选 '+(q.multi?selected.size+' 项':'') : '待选择';
+}
+
+function updateNav(){
+  const q = QUESTIONS[cur];
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  prevBtn.style.display = cur===0 ? 'none' : 'flex';
+  const has = selected.size>0;
+  nextBtn.textContent = has ? (cur===QUESTIONS.length-1 ? '查看结果' : '下一题') : (cur===QUESTIONS.length-1 ? '直接看结果' : '跳过');
+  nextBtn.disabled = false;
+  if(has && q.key!=='major'){
+    const arr = Array.from(selected);
+    answers[q.key] = q.multi ? arr : arr[0];
+  }else if(has && q.key==='major'){
+    answers[q.key] = Array.from(selected);
+  }else{
+    // 未选：跳过该维度
+    answers[q.key] = q.multi ? [] : null;
+  }
+}
+
+function next(){
+  if(cur < QUESTIONS.length-1){
+    cur++;
+    renderQuestion();
+  }else{
+    showResult();
+  }
+}
+
+function prev(){
+  if(cur>0){ cur--; renderQuestion(); }
+}
+
+function showResult(){
+  document.getElementById('quizView').style.display='none';
+  document.getElementById('resultView').hidden=false;
+  document.getElementById('prevBtn').style.display='none';
+  document.getElementById('nextBtn').style.display='none';
+
+  let list = JOBS.filter(j=>matchJob(j, answers));
+  let relax = '';
+
+  if(list.length===0){
+    const relaxedAns = Object.assign({}, answers);
+    relaxedAns.loc = null;
+    let l2 = JOBS.filter(j=>matchJob(j, relaxedAns));
+    if(l2.length>0){ list = l2; relax = '主城区暂无完全匹配，已为你展示全市可报岗位'; }
+    else{
+      const relaxedAns2 = Object.assign({}, answers);
+      relaxedAns2.major = [];
+      const l3 = JOBS.filter(j=>matchJob(j, relaxedAns2));
+      if(l3.length>0){ list = l3; relax = '已放宽专业限制，展示可报岗位'; }
+    }
+  }
+
+  list.sort((a,b)=>{
+    const ra = LOC_RANK[a.loc]!==undefined ? LOC_RANK[a.loc] : 2;
+    const rb = LOC_RANK[b.loc]!==undefined ? LOC_RANK[b.loc] : 2;
+    if(ra!==rb) return ra-rb;
+    return (parseInt(b.num)||0)-(parseInt(a.num)||0);
+  });
+
+  const rv = document.getElementById('resultView');
+  let html = '<div class="result-head"><div class="big">'+list.length+'<small>个岗位</small></div>';
+  html += '<h2>'+ (list.length>0 ? '这是匹配的结果' : '暂未找到完全匹配的岗位') +'</h2>';
+  html += '<p class="note">按她填的条件从成都岗位里筛选，报名前请以官方简章为准。</p>';
+  if(relax) html += '<span class="relax">'+relax+'</span>';
+  html += '</div>';
+
+  if(list.length===0){
+    html += '<div class="qcard" style="text-align:center;padding:36px 20px;"><p style="margin:0;color:var(--muted);font-size:14.5px;">条件可能偏窄，试试放宽专业或地点再测一次。</p></div>';
+  }else{
+    list.forEach((j,i)=>{
+      html += '<div class="rcard" style="animation-delay:'+(i*0.04)+'s">'
+            + '<div class="top"><div class="dept">'+j.dept+'</div><div class="num">招 '+j.num+' 人</div></div>'
+            + '<div class="post">'+j.post+'</div>'
+            + '<div class="loc">'+j.loc.replace('四川省成都市','成都')+'</div>'
+            + '<div class="grid">'
+            + '<div class="cell">专业：<b>'+j.major+'</b></div>'
+            + '<div class="cell">学历：<b>'+j.edu+'</b></div>'
+            + '<div class="cell">政治：<b>'+j.party+'</b></div>'
+            + '<div class="cell">面试：<b>'+j.ratio+'</b></div>'
+            + '</div></div>';
+    });
+  }
+
+  html += '<p class="disclaimer">岗位数据来自《中央机关及其直属机构 2027 年度考试录用公务员招考简章》，结果仅供参考，报名条件请以国家公务员局官方公告为准。</p>';
+  html += '<div style="text-align:center;margin:20px 0;"><button class="btn btn-ghost" id="restartBtn" style="width:100%;flex:none;">重新测评</button></div>';
+  rv.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click', ()=>{
+    Object.keys(answers).forEach(k=>delete answers[k]);
+    cur = 0; selected.clear();
+    document.getElementById('resultView').hidden=true;
+    document.getElementById('quizView').style.display='';
+    document.getElementById('nextBtn').style.display='';
+    renderQuestion();
+  });
+}
+
+document.getElementById('nextBtn').addEventListener('click', next);
+document.getElementById('prevBtn').addEventListener('click', prev);
+renderQuestion();
+</script>
+</body>
+</html>
